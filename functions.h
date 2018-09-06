@@ -19,11 +19,12 @@ Node *root, *cwd;   //root and cwd pointer
 char *line[128];     //user input command line
 char command[16], pathname[64];
 char dname[64], bname[64];
+char *name[16];
 
 char *cmd[] = {"mkdir", "rmdir", "ls", "cd", "pwd", "creat",
         "rm", "reload", "save", "menu", "quit", NULL};
 
-int processPathname(char pathname[]);
+int tokenize(char *pathname);
 
 //function declaratoins
 int mkdir(char *pathname);
@@ -73,43 +74,43 @@ int findCmd(char *command){
 
 int mkdir(char *pathname){
 
-    processPathname(pathname);
+    //processPathname(pathname);
+    int test = tokenize(pathname);
+
+    printf("First name: %s \n", name[0]);
 
     return 1;
 }
 
-int processPathname(char *pathname){
-
-    char *test;
-    char *curLevel, *prevLevel;
+int tokenize(char *pathname)
+{
+    int n = 0;
+    char *curDirectory;
+    char *pathCopy = (char*)malloc(sizeof(pathname));
     bool absolute = (pathname[0] == '/');
 
-    //toss a / at index 0 for absolute directories
-    if (absolute == true){
+    //make a copy of the pathname as to not destroy the original
+    strcpy(pathCopy, pathname);
+    
+    //logic block for absolute pathnames
+    if(absolute){
+        curDirectory = strtok(pathCopy, "/") - 1;
+    }else{
+        curDirectory = strtok(pathCopy, "/");
+    }
+    
+    while(curDirectory != NULL){
 
-        strcat(dname, "/");   
+        name[n] = curDirectory;
+
+        curDirectory = strtok(NULL, "/");
+
+        n++;
     }
 
-    //first pull of strtok to get things started
-    curLevel = strtok(pathname, "/");
+    //set the dname
+    //strncpy(dname, name[n-1], sizeof(dname) - 1);
 
-    //outcome is the dname (pathname sans /baseName)
-    while(curLevel != NULL){
-
-        prevLevel = curLevel;
-
-        curLevel = strtok(NULL, "/");
-        
-        if(curLevel != NULL){
-
-            strcat(dname, prevLevel);
-            strcat(dname, "/");
-        }
-    }
-
-    //pop the last char of the dname (a /)
-    dname[strlen(dname)-1] = 0;
-
-    //set the bname
-    strcat(bname, prevLevel);
+    //return the number of tokens
+    return n;
 }
