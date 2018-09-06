@@ -1,56 +1,44 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include "functions.h"
 
-void initialize();
-
-typedef struct node{
-
-    char name[64];
-    char type;
-    struct node* child;
-    struct node* sibling;
-    struct node* parent;
-
-} Node;
-
-Node *root, *cwd;   //root and cwd pointer
-char *line[128];     //user input command line
-char command[16], pathname[64];
-char dname[64], bname[64];
 
 int main(void){
 
-    //initialize the file system
+    int index;
+
+    printf("Intitializing..\n");
+
+    //run the init function
     initialize();
+
+    printf("Done\n");
 
     while(1){
 
+        //Prompt user for a command
+        printf("Command: ");
+
+        fflush(stdout);
+
+        fgets(line, 128, stdin);
+
+        //chop the tail off the line, set to null
+        line[strlen(line)-1] = 0;
+
+        //break the line up into commands and pathnames
+        sscanf(line, "%s %s", command, pathname);
+
+        //get the index from the command finder
+        index = findCmd(command);
+
+        //r will represent the return code.. see table
+        int r = fptr[index](pathname);
 
 
-        break;
+
+        //reset line info.. cleanup
+        
     }
-    printf("hey\n");
-
     
-
     return 0;
 }
 
-void initialize(){
-
-    //Allocate space for a root node and init it's fields
-    root = (Node *) malloc(sizeof(Node));
-
-    *root->name = '/';
-
-    root->type = 'D';
-
-    root->parent = NULL;
-
-    root->child = NULL;
-
-    root->sibling = NULL; 
-
-    //set the cwd to root
-    cwd = root;
-}
