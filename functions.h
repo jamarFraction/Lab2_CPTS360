@@ -179,6 +179,7 @@ Node *insertLocation(char *pathname[], char targetType){
                 currentDirectory = currentDirectory->child->sibling;
             }else{
 
+
                 currentDirectory = currentDirectory->child;
             }
         }else{
