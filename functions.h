@@ -25,7 +25,7 @@ char *cmd[] = {"mkdir", "rmdir", "ls", "cd", "pwd", "creat",
         "rm", "reload", "save", "menu", "quit", NULL};
 
 int tokenize(char *pathname);
-Node *canInsert(char *pathname[], char targetType);
+Node *insertLocation(char *pathname[], char targetType);
 void Insert(char *baseName, char type, Node *location);
 bool doesExist(char *itemName, char itemType, Node *parentDirectory);
 
@@ -85,11 +85,11 @@ int mkdir(char *pathname){
 
     //find dirName
     //create Node pointer for potential insertion location
-    Node *insertLocation = canInsert(name, 'D');
+    Node *location = insertLocation(name, 'D');
 
-    if(insertLocation != NULL){
+    if(location != NULL){
 
-        Insert(bname, 'D', insertLocation);
+        Insert(bname, 'D', location);
     }
 
     return 1;
@@ -135,61 +135,59 @@ int tokenize(char *pathname)
     return n;
 }
 
-Node *canInsert(char *pathname[], char targetType){
+Node *insertLocation(char *pathname[], char targetType){
 
     int i = 0;
     int numOfTokens = getPathnameCount(pathname);
+    int loopCycles = 0;
     Node *currentDirectory;
 
     //set the starting point of the search
     if(pathname[i] == "/"){
+        //starting point
         currentDirectory = root;
+
+        //necessary for proper loop termination
+        loopCycles = numOfTokens - 1;
+
+        //increment i, we don't care about pathname[0] in this case
+        i++;
     }
     else{
+        //starting point
         currentDirectory = cwd;
+
+        //necessary for proper loop termination
+        if(numOfTokens > 2){
+            loopCycles = numOfTokens;
+        }else{
+            loopCycles = numOfTokens -1;
+        }  
     }
 
     //directory name comparisson loop
     //end target is the last name in the name[] array - 1
-    for(; i < numOfTokens - 1; i++){
+    for (; i < loopCycles; i++){
 
-        if(currentDirectory != NULL &&
-            strcmp(pathname[i], currentDirectory->name) == 0){// pathname[i] == currentDirectory->name){
+        if(doesExist(pathname[i],targetType, currentDirectory)){
             
-            //the loop will iterate again, go 1 level deeper
-            if(i + 1 != numOfTokens -1){
-                currentDirectory = currentDirectory->child;
-            }
-
-        }else if(currentDirectory != NULL &&
-            strcmp(pathname[i], currentDirectory->sibling->name) == 0){
-            
-            currentDirectory = currentDirectory->sibling;
-
-            //the loop will iterate again, go 1 level deeper
-            if((i + 1) != (numOfTokens -1)){
+            //check for if the pathname is the child's sibling
+            //and not the child
+            if(currentDirectory->child->sibling != NULL &&
+                (strcmp(pathname[i], currentDirectory->child->sibling->name) == 0)){
+    
+                currentDirectory = currentDirectory->child->sibling;
+            }else{
 
                 currentDirectory = currentDirectory->child;
             }
         }else{
-
-            //Non-existent directory
-            printf("Directory %s does not exist! Operation failed\n", pathname[i]);
+            printf("%c %s Does not exist. Operation failed.\n", targetType, pathname[i]);
             return NULL;
         }
     }
 
-
-    //Final check is for space in the directory's child + sibling nodes
-    if(currentDirectory->child == NULL ||
-        currentDirectory->child->sibling == NULL){
-
-            return currentDirectory;
-    }
-
-    //No space in either node
-    printf("%s does not have have room for insertion! Operation failed!\n", currentDirectory->name);
-    return NULL;
+    return currentDirectory;
 }
 
 int getPathnameCount(char *name[]){
@@ -209,7 +207,13 @@ void Insert(char *baseName, char type, Node *parentDirectory){
 
     //case for trying to insert an already existing directory
     if(exists){
-        printf("Directory %s already exists. Operation failed\n", baseName);
+        printf("%c %s already exists. Operation failed.\n", type, baseName);
+        return;
+    }else if(parentDirectory->child != NULL &&
+        parentDirectory->child->sibling != NULL){
+        
+        //No space in either node
+        printf("%s does not have have room for insertion. Operation failed.\n", parentDirectory->name);
         return;
     }
         
@@ -249,8 +253,7 @@ bool doesExist(char *itemName, char itemType, Node *parentDirectory){
 
     //gross conditional block that checks for existence of itemName in/is
     //the parent directory
-    if((strcmp(parent, itemName) == 0 ||
-        strcmp(child, itemName) == 0 ) ||
+    if((strcmp(child, itemName) == 0 ) ||
         strcmp(sibling, itemName) == 0){
 
             return true;
