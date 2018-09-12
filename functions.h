@@ -14,7 +14,9 @@ typedef struct node
 
 } Node;
 
-//Globals
+//Globals/////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
 Node *root, *cwd; //root and cwd pointer
 char *line[128];  //user input command line
 char command[16], pathname[64];
@@ -24,21 +26,25 @@ char *name[16];
 char *cmd[] = {"mkdir", "rmdir", "ls", "cd", "pwd", "creat",
                "rm", "reload", "save", "menu", "quit", NULL};
 
+
+//Function declarations///////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
 int tokenize(char *pathname);
 Node *insertLocation(char *pathname[], char targetType);
 Node *removeLocation(char *pathname[], char targetType);
 void Insert(char *baseName, char type, Node *location);
 void Remove(char *baseName, char type, Node *target);
 bool doesExist(char *itemName, char itemType, Node *parentDirectory);
-
-//function declaratoins
 int mkdir(char *pathname);
 int rmdir(char *pathname);
 
 //holder of all that is hol-y
 int (*fptr[])(char *) = {(int (*)(char *))mkdir, rmdir};
 
-//Function defs
+//Function defs///////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
 void initialize()
 {
     //Allocate space for a root node and init it's fields
@@ -134,31 +140,6 @@ int rmdir(char *pathname){
             return -1;
         }   
     }
-
-    // //silly rabbit
-    // if(location != NULL &&
-    //     strcmp("/", location->name) == 0){
-
-    //     printf("Cannot remove root. Operation failed.\n");
-    //     return -1;
-    // }
-
-    // //ensure the dir is not empty before sending off for removal
-    // if (location != NULL && location->child == NULL)
-    // {
-    //     Remove(bname, 'D', location);
-    //     printf("Directory %s removed successfully.\n", bname);
-    //     return 1;
-    // }else{
-
-    //     //this logic contains redundacy due to above conditional
-    //     //..may explore
-    //     if(location != NULL && location->child != NULL){
-    //         printf("Directory %s is not empty. Operation failed.\n", bname);
-    //     }
-
-    //     return -1;
-    // }    
 }
 
 int tokenize(char *pathname)
@@ -194,9 +175,6 @@ int tokenize(char *pathname)
 
         n++;
     }
-
-    //set the dname
-    //strncpy(dname, name[n-1], sizeof(dname) - 1);
 
     //return the number of tokens
     return n;
