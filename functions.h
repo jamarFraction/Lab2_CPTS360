@@ -115,21 +115,50 @@ int rmdir(char *pathname){
     //create Node pointer for potential insertion location
     Node *location = removeLocation(name, 'D');
 
-    //ensure the dir is not empty before sending off for removal
-    if (location != NULL && location->child == NULL)
-    {
-        Remove(bname, 'D', location);
-        printf("Directory %s removed successfully.\n", bname);
-        return 1;
-    }else{
+    if(location != NULL){
 
-        if(location->child != NULL){
-            printf("Directory %s is not empty. Operation failed.\n", bname);
+        //silly rabbit
+        if(strcmp("/", location->name) == 0){
+
+            printf("Cannot remove root. Operation failed.\n");
+            return -1;
         }
 
+        if(location->child == NULL)
+        {
+            Remove(bname, 'D', location);
+            printf("Directory %s removed successfully.\n", bname);
+            return 1;
+        }else{
+            printf("Directory %s is not empty. Operation failed.\n", bname);
+            return -1;
+        }   
+    }
 
-        return -1;
-    }    
+    // //silly rabbit
+    // if(location != NULL &&
+    //     strcmp("/", location->name) == 0){
+
+    //     printf("Cannot remove root. Operation failed.\n");
+    //     return -1;
+    // }
+
+    // //ensure the dir is not empty before sending off for removal
+    // if (location != NULL && location->child == NULL)
+    // {
+    //     Remove(bname, 'D', location);
+    //     printf("Directory %s removed successfully.\n", bname);
+    //     return 1;
+    // }else{
+
+    //     //this logic contains redundacy due to above conditional
+    //     //..may explore
+    //     if(location != NULL && location->child != NULL){
+    //         printf("Directory %s is not empty. Operation failed.\n", bname);
+    //     }
+
+    //     return -1;
+    // }    
 }
 
 int tokenize(char *pathname)
@@ -318,40 +347,24 @@ void Remove(char *baseName, char type, Node *target)
     //especially at the grocery store
     Node *parent = target->parent;
 
-    if(target->sibling != NULL){
-
+    //the node being deleted is the youngest child
+    if(parent->child != target){
+        
+        parent->child->sibling = NULL;
+        free(target);
+        return;
+    }else if(target->sibling != NULL){
+        
         //solidify the link between parent and newly appointed oldest child
         parent->child = target->sibling;
     }else{
+
+        //node to be removed is an only child
         parent->child = NULL;
     }
 
+    //you gotta go
     free(target);
-
-
-
-
-    //Determine if the node is a child or sibling
-    // if((strcmp(parentDirectory->child->name, baseName) == 0) &&
-    //     (parentDirectory->child->type == type)){
-        
-    //     //bullseye
-    //     target = parentDirectory->child;
-
-    //     //link the parent to the new oldest child!
-    //     parentDirectory->child = parentDirectory->child->sibling;
-
-    //     //free the node
-    //     free(target);
-
-    // }else{
-
-    //     //mulligan?
-    //     target = parentDirectory->child->sibling;
-
-    //     free(target);
-
-    // }
 
 }
 void Insert(char *baseName, char type, Node *parentDirectory)
