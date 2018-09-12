@@ -127,6 +127,7 @@ int rmdir(char *pathname){
             printf("Directory %s is not empty. Operation failed.\n", bname);
         }
 
+
         return -1;
     }    
 }
