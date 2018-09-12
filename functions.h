@@ -28,6 +28,7 @@ int tokenize(char *pathname);
 Node *insertLocation(char *pathname[], char targetType);
 Node *removeLocation(char *pathname[], char targetType);
 void Insert(char *baseName, char type, Node *location);
+void Remove(char *baseName, char type, Node *target);
 bool doesExist(char *itemName, char itemType, Node *parentDirectory);
 
 //function declaratoins
@@ -114,7 +115,20 @@ int rmdir(char *pathname){
     //create Node pointer for potential insertion location
     Node *location = removeLocation(name, 'D');
 
+    //ensure the dir is not empty before sending off for removal
+    if (location != NULL && location->child == NULL)
+    {
+        Remove(bname, 'D', location);
+        printf("Directory %s removed successfully.\n", bname);
+        return 1;
+    }else{
 
+        if(location->child != NULL){
+            printf("Directory %s is not empty. Operation failed.\n", bname);
+        }
+
+        return -1;
+    }    
 }
 
 int tokenize(char *pathname)
@@ -171,9 +185,6 @@ Node *removeLocation(char *pathname[], char targetType){
         //starting point
         currentDirectory = root;
 
-        //necessary for proper loop termination
-        loopCycles = numOfTokens;
-
         //increment i, we don't care about pathname[0] in this case
         i++;
     }
@@ -181,8 +192,10 @@ Node *removeLocation(char *pathname[], char targetType){
     {
         //starting point
         currentDirectory = cwd;
-        loopCycles = numOfTokens;
     }
+
+    //set the loop cycle 
+    loopCycles = numOfTokens;
 
 
     //directory name comparisson loop
@@ -247,7 +260,8 @@ Node *insertLocation(char *pathname[], char targetType)
             loopCycles = numOfTokens;
         }
         else
-        {
+        {   
+            //stop at the parent node, not the exact node itself
             loopCycles = numOfTokens - 1;
         }
     }
@@ -297,6 +311,48 @@ int getPathnameCount(char *name[])
     return count;
 }
 
+void Remove(char *baseName, char type, Node *target)
+{
+    //can't lose track of your parents.. 
+    //especially at the grocery store
+    Node *parent = target->parent;
+
+    if(target->sibling != NULL){
+
+        //solidify the link between parent and newly appointed oldest child
+        parent->child = target->sibling;
+    }else{
+        parent->child = NULL;
+    }
+
+    free(target);
+
+
+
+
+    //Determine if the node is a child or sibling
+    // if((strcmp(parentDirectory->child->name, baseName) == 0) &&
+    //     (parentDirectory->child->type == type)){
+        
+    //     //bullseye
+    //     target = parentDirectory->child;
+
+    //     //link the parent to the new oldest child!
+    //     parentDirectory->child = parentDirectory->child->sibling;
+
+    //     //free the node
+    //     free(target);
+
+    // }else{
+
+    //     //mulligan?
+    //     target = parentDirectory->child->sibling;
+
+    //     free(target);
+
+    // }
+
+}
 void Insert(char *baseName, char type, Node *parentDirectory)
 {
 
@@ -359,10 +415,9 @@ bool doesExist(char *itemName, char itemType, Node *parentDirectory)
         }
     }
 
-    //gross conditional block that checks for existence of itemName in/is
-    //the parent directory
+    //gross conditional block that checks for existence of itemName + type
     if (((strcmp(child, itemName) == 0) && parentDirectory->child->type == itemType) ||
-        (strcmp(sibling, itemName) == 0) && parentDirectory->child->sibling->type ==itemType)
+        (strcmp(sibling, itemName) == 0) && parentDirectory->child->sibling->type == itemType)
     {
 
         return true;

@@ -15,9 +15,7 @@ int main(void){
     while(1){
 
         //Prompt user for a command
-        printf("Command: ");
-
-        fflush(stdout);
+        printf("Command: "); fflush(stdout);
 
         fgets(line, 128, stdin);
 
@@ -33,10 +31,10 @@ int main(void){
         //r will represent the return code.. see table
         int r = fptr[index](pathname);
 
-
-
-        //reset line info.. cleanup
-        
+        //reset line (name var) info.. cleanup
+        for(int i = 0; i < 16; i++){
+            name[i] = NULL;
+        }
     }
     
     return 0;
