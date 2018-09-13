@@ -46,11 +46,12 @@ int cd(char *pathname);
 int pwd(void);
 void pwdRecurs(Node *location);
 int creat(char *pathname);
+int rm(char *pathname);
 void printNode(Node *ptr);
 
 //holder of all that is hol-y
 int (*fptr[])(char *) = {(int (*)(char *))mkdir, rmdir, ls, cd, pwd,
-creat};
+creat, rm};
 
 //Function defs///////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
@@ -195,7 +196,7 @@ int cd(char *pathname){
     }else if(location->type != 'D'){
 
         //is this even a directory?
-        printf("%s is not a directory. Operation failed.", location->name);
+        printf("%s is not a directory. Operation failed.\n", location->name);
         return -1;
     }
     
@@ -268,6 +269,38 @@ int creat(char *pathname){
     }
 
     return 1;
+
+}
+
+
+int rm(char *pathname){
+    
+    //results exist in global name[]
+    int count = tokenize(pathname);
+
+    //set basename
+    bname = name[count - 1];
+
+    //find dirName
+    //create Node pointer for potential insertion location
+    Node *location = removeLocation(name, 'F');
+
+    if(location != NULL){
+
+        //silly rabbit
+        if(strcmp("/", location->name) == 0){
+
+            printf("Cannot remove root. Operation failed.\n");
+            return -1;
+        }
+
+        Remove(bname, 'F', location);
+
+        printf("File %s removed successfully.\n", bname);
+
+        return 1;  
+    }
+
 
 }
 
@@ -549,8 +582,9 @@ void Remove(char *baseName, char type, Node *target)
     if(parent->child != target){
         
         parent->child->sibling = NULL;
-        free(target);
         printf("Delete %s successful.\n", target->name);
+        free(target);
+        
 
         return;
     }else if(target->sibling != NULL){
@@ -564,8 +598,9 @@ void Remove(char *baseName, char type, Node *target)
     }
 
     //you gotta go
-    free(target);
     printf("Delete %s successful.\n", target->name);
+    free(target);
+    
 
 }
 void Insert(char *baseName, char type, Node *parentDirectory)
