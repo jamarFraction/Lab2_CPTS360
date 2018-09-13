@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 
+
 typedef struct node
 {
 
@@ -48,10 +49,13 @@ void pwdRecurs(Node *location);
 int creat(char *pathname);
 int rm(char *pathname);
 void printNode(Node *ptr);
+void reload(void);
+int save(void);
+void printToFile(Node *ptr, FILE *outfile);
 
 //holder of all that is hol-y
 int (*fptr[])(char *) = {(int (*)(char *))mkdir, rmdir, ls, cd, pwd,
-creat, rm};
+creat, rm, reload, save};
 
 //Function defs///////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
@@ -272,7 +276,6 @@ int creat(char *pathname){
 
 }
 
-
 int rm(char *pathname){
     
     //results exist in global name[]
@@ -301,6 +304,29 @@ int rm(char *pathname){
         return 1;  
     }
 
+
+}
+
+void reload(void){}
+
+int save(void){
+
+    FILE *outfile = fopen("tree.txt","w+"); 
+
+    Node *start = root;
+
+    printToFile(start, outfile);
+
+
+    // fprintf(outfile, "hello, friend\n");
+
+
+    fclose(outfile);
+}
+
+void printToFile(Node *ptr, FILE *outfile){
+
+    
 
 }
 
