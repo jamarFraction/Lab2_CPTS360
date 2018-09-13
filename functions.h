@@ -43,11 +43,14 @@ int mkdir(char *pathname);
 int rmdir(char *pathname);
 int ls(char *pathname);
 int cd(char *pathname);
+int pwd(void);
+void pwdRecurs(Node *location);
 int creat(char *pathname);
 void printNode(Node *ptr);
 
 //holder of all that is hol-y
-int (*fptr[])(char *) = {(int (*)(char *))mkdir, rmdir, ls, cd};
+int (*fptr[])(char *) = {(int (*)(char *))mkdir, rmdir, ls, cd, pwd,
+creat};
 
 //Function defs///////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
@@ -202,6 +205,44 @@ int cd(char *pathname){
     printf("cd to Directory : %s successful.\n", location->name);
 
     return 1;
+
+}
+
+int pwd(void){
+
+
+    //start from the working directory
+    Node *location = cwd;
+
+    
+    if(location->parent != location){
+
+        printf("/");
+        pwdRecurs(location);
+        printf("\n");
+
+        return 1;
+    }
+
+    //hey, its the root!
+    printNode(location);
+
+    return 1;
+
+}
+
+void pwdRecurs(Node *location){
+
+    if(strcmp(location->parent->name, "/") != 0){
+
+        pwdRecurs(location->parent);
+    }
+    
+    printf("%s/", location->name);
+    fflush;
+
+    return;
+
 
 }
 
@@ -509,6 +550,8 @@ void Remove(char *baseName, char type, Node *target)
         
         parent->child->sibling = NULL;
         free(target);
+        printf("Delete %s successful.\n", target->name);
+
         return;
     }else if(target->sibling != NULL){
         
@@ -522,6 +565,7 @@ void Remove(char *baseName, char type, Node *target)
 
     //you gotta go
     free(target);
+    printf("Delete %s successful.\n", target->name);
 
 }
 void Insert(char *baseName, char type, Node *parentDirectory)
@@ -563,7 +607,7 @@ void Insert(char *baseName, char type, Node *parentDirectory)
         parentDirectory->child->sibling = newNode;
     }
 
-    printf("Insert directory %s successful\n", bname);
+    printf("Insert %s successful\n", bname);
 }
 
 bool doesExist(char *itemName, char itemType, Node *parentDirectory)
