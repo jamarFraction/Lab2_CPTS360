@@ -34,6 +34,12 @@ int main(void){
         //reset line (name var) info.. cleanup
         for(int i = 0; i < 16; i++){
             name[i] = NULL;
+            command[i] = NULL;
+            pathname[i] = NULL;
+        }
+
+        for(int i = 16; i < 64; i++){
+            pathname[i] = NULL;
         }
     }
     

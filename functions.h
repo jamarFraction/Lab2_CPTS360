@@ -35,12 +35,18 @@ Node *insertLocation(char *pathname[], char targetType);
 Node *removeLocation(char *pathname[], char targetType);
 void Insert(char *baseName, char type, Node *location);
 void Remove(char *baseName, char type, Node *target);
+bool find(char *itemName, Node *parentDirectory);   //C sucks, can't overload doesExits
 bool doesExist(char *itemName, char itemType, Node *parentDirectory);
+Node *findDirectory(char *pathname[]);
+int printDirectory(Node *directory);
 int mkdir(char *pathname);
 int rmdir(char *pathname);
+int ls(char *pathname);
+int creat(char *pathname);
+void printNode(Node *ptr);
 
 //holder of all that is hol-y
-int (*fptr[])(char *) = {(int (*)(char *))mkdir, rmdir};
+int (*fptr[])(char *) = {(int (*)(char *))mkdir, rmdir, ls};
 
 //Function defs///////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
@@ -104,6 +110,9 @@ int mkdir(char *pathname)
     {
 
         Insert(bname, 'D', location);
+    }else{
+
+        return -1;
     }
 
     return 1;
@@ -140,6 +149,53 @@ int rmdir(char *pathname){
             return -1;
         }   
     }
+}
+
+int ls(char *pathname){
+
+    //results exist in global name[]
+    int count = tokenize(pathname);
+
+    //set basename
+    bname = name[count - 1];
+
+    //find dirName
+    //create Node pointer for potential insertion location
+    Node *location = findDirectory(name);
+
+    //Error message already printed, item does not exist
+    if(location == NULL){
+        return -1;
+    }
+
+    //returns -1 if the passed location is not a directory
+    //1 if completed successfully
+    return printDirectory(location);
+}
+
+int creat(char *pathname){
+
+    //results exist in global name[]
+    int count = tokenize(pathname);
+
+    //set basename
+    bname = name[count - 1];
+
+    //find dirName
+    //create Node pointer for potential insertion location
+    Node *location = insertLocation(name, 'F');
+
+    if (location != NULL)
+    {
+
+        Insert(bname, 'F', location);
+    }else{
+
+        return -1;
+    }
+
+    return 1;
+
 }
 
 int tokenize(char *pathname)
@@ -180,6 +236,97 @@ int tokenize(char *pathname)
     return n;
 }
 
+int printDirectory(Node *directory){
+
+    if(directory->type != 'D'){
+        printf("%s is not a directory. Operation failed.", directory->name);
+        return -1;
+    }
+
+    //header
+    printf("Printing directory : %s\n", directory->name);
+
+    //Print the parent
+    printNode(directory);
+
+    //check for child
+    if(directory->child != NULL){
+
+        printNode(directory->child);
+
+        //check for sibling
+        if(directory->child->sibling != NULL){
+
+            printNode(directory->child->sibling);
+        }
+    }
+
+    return 1;
+
+}
+
+Node *findDirectory(char *pathname[]){
+
+    int i = 0;
+    int numOfTokens = getPathnameCount(name);
+    int loopCycles = 0;
+    Node *currentDirectory;
+
+    //set the starting point of the search
+    if (pathname[i] == "/")
+    {
+        //starting point
+        currentDirectory = root;
+
+        //increment i, we don't care about pathname[0] in this case
+        i++;
+    }
+    else
+    {
+        //starting point
+        currentDirectory = cwd;
+    }
+
+    //set the loop cycle 
+    loopCycles = numOfTokens;
+
+
+    //directory name comparisson loop
+    //end target is the last name in the name[] array - 1
+    for (; i < loopCycles; i++)
+    {
+
+        if (find(pathname[i], currentDirectory))
+        {
+
+            //check for if the pathname is the child's sibling
+            //and not the child
+            if (currentDirectory->child->sibling != NULL &&
+                (strcmp(pathname[i], currentDirectory->child->sibling->name) == 0))
+            {
+                currentDirectory = currentDirectory->child->sibling;
+            }
+            else
+            {
+                currentDirectory = currentDirectory->child;
+            }
+        }
+        else
+        {
+            printf("%c %s Does not exist. Operation failed.\n", currentDirectory->type, pathname[i]);
+            return NULL;
+        }
+    }
+
+    return currentDirectory; 
+}
+
+void printNode(Node *ptr){
+
+    //easy peasy
+    printf("%c %s\n", ptr->type, ptr->name);
+}
+
 Node *removeLocation(char *pathname[], char targetType){
 
     int i = 0;
@@ -207,7 +354,7 @@ Node *removeLocation(char *pathname[], char targetType){
 
 
     //directory name comparisson loop
-    //end target is the last name in the name[] array - 1
+    //end target is the last name in the name[] array
     for (; i < loopCycles; i++)
     {
 
@@ -410,6 +557,37 @@ bool doesExist(char *itemName, char itemType, Node *parentDirectory)
     //gross conditional block that checks for existence of itemName + type
     if (((strcmp(child, itemName) == 0) && parentDirectory->child->type == itemType) ||
         (strcmp(sibling, itemName) == 0) && parentDirectory->child->sibling->type == itemType)
+    {
+
+        return true;
+    }
+
+    //sorry fam, we don't got what you looking for
+    return false;
+}
+
+bool find(char *itemName, Node *parentDirectory){
+
+    char *parent = parentDirectory->name;
+    char *child = "", *sibling = "";
+
+    //make sure the child dir is not null
+    if (parentDirectory->child != NULL)
+    {
+        //set the child name
+        child = parentDirectory->child->name;
+
+        //check for the sibling existence
+        if (parentDirectory->child->sibling != NULL)
+        {
+            //set the sibling name
+            sibling = parentDirectory->child->sibling->name;
+        }
+    }
+
+    //gross conditional block that checks for existence of itemName + type
+    if ((strcmp(child, itemName) == 0) ||
+        (strcmp(sibling, itemName) == 0))
     {
 
         return true;
