@@ -42,11 +42,12 @@ int printDirectory(Node *directory);
 int mkdir(char *pathname);
 int rmdir(char *pathname);
 int ls(char *pathname);
+int cd(char *pathname);
 int creat(char *pathname);
 void printNode(Node *ptr);
 
 //holder of all that is hol-y
-int (*fptr[])(char *) = {(int (*)(char *))mkdir, rmdir, ls};
+int (*fptr[])(char *) = {(int (*)(char *))mkdir, rmdir, ls, cd};
 
 //Function defs///////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
@@ -171,6 +172,37 @@ int ls(char *pathname){
     //returns -1 if the passed location is not a directory
     //1 if completed successfully
     return printDirectory(location);
+}
+
+int cd(char *pathname){
+
+    //results exist in global name[]
+    int count = tokenize(pathname);
+
+    //set basename
+    bname = name[count - 1];
+
+    //find dirName
+    //create Node pointer for potential insertion location
+    Node *location = findDirectory(name);
+
+    //Error message already printed, item does not exist
+    if(location == NULL){
+        return -1;
+    }else if(location->type != 'D'){
+
+        //is this even a directory?
+        printf("%s is not a directory. Operation failed.", location->name);
+        return -1;
+    }
+    
+    //change the working directory and print
+    cwd = location;
+
+    printf("cd to Directory : %s successful.\n", location->name);
+
+    return 1;
+
 }
 
 int creat(char *pathname){
